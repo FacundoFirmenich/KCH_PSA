@@ -29,5 +29,7 @@ Este README fija el punto de partida, no demuestra todavía integración, superi
 - [Ecosistema de arneses y agentes 2026](docs/ECOSYSTEM_2026-11-05.md)
 - [Arquitectura KCH_PSA](docs/ARCHITECTURE_v0.1.md)
 - [Evaluación de importación Jarvis 0.9.0](docs/JARVIS_0.9_IMPORT_ASSESSMENT_v0.1.md)
+- [Contrato ejecutable de engines](docs/ENGINE_CONTRACT_v0.1.md)
+- [Checkpoint de implementación 0.1](docs/IMPLEMENTATION_CHECKPOINT_0.1.md)
 - [Registro de fuentes](docs/SOURCE_REGISTRY_v0.1.json)
 - [Checkpoint material](docs/CHECKPOINT_MATERIAL_2026-11-05.md)

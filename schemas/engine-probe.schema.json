@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FacundoFirmenich/KCH_PSA/schemas/engine-probe.schema.json",
+  "title": "KCH PSA Engine Probe v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "engine_id", "adapter_version", "observed_at", "state", "versions", "capabilities", "deployment_axes", "limits", "evidence"],
+  "properties": {
+    "schema": {"const": "kch-psa.engine-probe.v0.1.0"},
+    "engine_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "adapter_version": {"type": "string", "minLength": 1, "maxLength": 200},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "state": {"enum": ["AVAILABLE", "CONNECTED", "UNAVAILABLE", "BROKEN"]},
+    "versions": {"type": "object", "additionalProperties": {"type": "string"}},
+    "capabilities": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "deployment_axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specification", "code", "tests", "package", "install", "host_activation", "continuous_operation", "causal_validation", "external_authority"],
+      "properties": {
+        "specification": {"$ref": "#/$defs/axis"},
+        "code": {"$ref": "#/$defs/axis"},
+        "tests": {"$ref": "#/$defs/axis"},
+        "package": {"$ref": "#/$defs/axis"},
+        "install": {"$ref": "#/$defs/axis"},
+        "host_activation": {"$ref": "#/$defs/axis"},
+        "continuous_operation": {"$ref": "#/$defs/axis"},
+        "causal_validation": {"$ref": "#/$defs/axis"},
+        "external_authority": {"$ref": "#/$defs/axis"}
+      }
+    },
+    "limits": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "evidence": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "$defs": {
+    "axis": {"enum": ["PRESENT", "ABSENT", "NOT_ESTIMABLE", "NOT_APPLICABLE"]}
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FacundoFirmenich/KCH_PSA/schemas/execution-receipt.schema.json",
+  "title": "KCH PSA Execution Receipt v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "receipt_id", "mission_id", "engine_id", "operation", "status", "started_at", "ended_at", "request_sha256", "result_sha256", "side_effect", "event_chain_head", "evidence_boundaries", "error"],
+  "properties": {
+    "schema": {"const": "kch-psa.execution-receipt.v0.1.0"},
+    "receipt_id": {"type": "string", "format": "uuid"},
+    "mission_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "engine_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "operation": {"type": "string", "minLength": 1, "maxLength": 200},
+    "status": {"enum": ["PASS", "FAIL", "ABSTAIN", "NOT_ESTIMABLE"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": "string", "format": "date-time"},
+    "request_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "result_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "side_effect": {"enum": ["NONE", "CONFIRMED", "UNCERTAIN"]},
+    "event_chain_head": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "evidence_boundaries": {"type": "array", "items": {"type": "string"}},
+    "error": {"type": ["string", "null"]}
+  }
+}

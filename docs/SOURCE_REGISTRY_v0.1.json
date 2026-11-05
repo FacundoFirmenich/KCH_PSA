@@ -16,6 +16,15 @@
       "state": "CREATED_AND_PUSHED"
     },
     {
+      "id": "kch-psa-engine-contract-0.1",
+      "uri": "repo://KCH_PSA/src/kch_psa",
+      "state": "SOURCE_TESTED_WHEEL_BUILT_INSTALL_SMOKE_PASS",
+      "tests": "12/12",
+      "wheel_sha256": "f680ed32318ca5138d062b502a377a75f86fc1aa879a1078b4bf3db9ef52f7fc",
+      "wheel_bytes": 10610,
+      "host_adapter_executed": false
+    },
+    {
       "id": "codex-jarvis-telegram-desktop",
       "uri": "codex://threads/01a077b6-f814-7b92-ae6d-18fc6e0bed7a",
       "state": "RECENT_NATIVE_TURN_READ_NOT_EOF",
