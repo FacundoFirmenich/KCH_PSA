@@ -28,5 +28,6 @@ Este README fija el punto de partida, no demuestra todavía integración, superi
 - [Reconciliación del estado KCH/Jarvis](docs/CURRENT_STATE_RECONCILIATION_v0.1.md)
 - [Ecosistema de arneses y agentes 2026](docs/ECOSYSTEM_2026-11-05.md)
 - [Arquitectura KCH_PSA](docs/ARCHITECTURE_v0.1.md)
+- [Evaluación de importación Jarvis 0.9.0](docs/JARVIS_0.9_IMPORT_ASSESSMENT_v0.1.md)
 - [Registro de fuentes](docs/SOURCE_REGISTRY_v0.1.json)
 - [Checkpoint material](docs/CHECKPOINT_MATERIAL_2026-11-05.md)

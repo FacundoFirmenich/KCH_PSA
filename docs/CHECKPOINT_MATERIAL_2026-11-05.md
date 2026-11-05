@@ -12,6 +12,7 @@ El proyecto está mejor posicionado que al inicio porque ya no depende de la fal
 - Se separaron tres genealogías: kernel KCH, Jarvis y superficies de producto.
 - Se actualizó la arquitectura frente a Cline 2, OpenCode 2, OpenClaw 2, Codex App Server, DeepSeek Harness, Qwen Code, LangGraph y VS Code Agents.
 - Se fijó una arquitectura de mancomunidad confederada con sidecar Python, núcleo constitucional y adapters nativos.
+- Se verificó la candidata privada Jarvis 0.9.0 y su adapter Cline en el commit remoto exacto `8b14850b735ff76244cda6cf903135fb1012e836`.
 
 ## Qué significa
 
@@ -22,6 +23,7 @@ Técnicamente, KCH_PSA puede dejar de ser una colección de prompts, plugins o C
 - causalidad host-real de R34 después de deshabilitarla y reiniciar;
 - EOF de todos los chats/tareas relevantes;
 - artefactos exactos y estado ejecutable de Jarvis posterior a agosto;
+- reejecución independiente de la suite Jarvis 0.9.0 y decisión de licencia/custodia antes de importar código privado;
 - comportamiento real de los SDK actuales en este host;
 - primera implementación y gates del runtime KCH_PSA;
 - seguridad, robustez longitudinal y utilidad comparativa.

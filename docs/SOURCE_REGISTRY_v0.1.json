@@ -18,7 +18,16 @@
     {
       "id": "codex-jarvis-telegram-desktop",
       "uri": "codex://threads/01a077b6-f814-7b92-ae6d-18fc6e0bed7a",
-      "state": "PARTIAL_NATIVE_READ_NOT_EOF"
+      "state": "RECENT_NATIVE_TURN_READ_NOT_EOF",
+      "latest_verified_turn_id": "01a1a381-0941-7dd3-a42b-c59976e7b4e5"
+    },
+    {
+      "id": "github-jarvis-main",
+      "uri": "https://github.com/FacundoFirmenich/Jarvis",
+      "state": "EXACT_REMOTE_MAIN_VERIFIED_PRIVATE",
+      "commit": "8b14850b735ff76244cda6cf903135fb1012e836",
+      "path_count": 149,
+      "truncated": false
     },
     {
       "id": "codex-jarvis-native-gpt-bridge",
@@ -28,7 +37,7 @@
     {
       "id": "codex-jarvis-v053-1",
       "uri": "codex://threads/01a03f11-dcfe-7350-8e5a-abcbdf9c4617",
-      "state": "IDENTIFIED_NOT_YET_EOF"
+      "state": "RECENT_NATIVE_TURNS_READ_NOT_EOF_CURRENTLY_SCIENTIFIC_BRANCH"
     },
     {
       "id": "codex-jarvis-v053-2",

@@ -29,18 +29,28 @@ Estos números son evidencia histórica del repositorio, no fueron reejecutados 
 - La presencia en caché o configuración no demuestra que cada capacidad se interponga realmente en cada inferencia.
 - PHL sigue autorizado arquitectónicamente, no entrenado ni ejecutado con feedback real.
 
-## Línea Jarvis recuperada hasta ahora
+## Línea Jarvis recuperada y verificada
 
-Las tareas nativas posteriores a agosto muestran trabajo sobre:
+La tarea nativa `Jarvis: Telegram y desktop` y el repositorio privado `FacundoFirmenich/Jarvis` convergen en un estado más avanzado que el KCH público:
+
+- `main` remoto termina exactamente en `8b14850b735ff76244cda6cf903135fb1012e836`.
+- `package.json` declara una candidata 0.9.0 y Node >=24.11.1.
+- existe un adapter `ClineEngine` que carga `ClineCore` desde la instalación local, lista/lee sesiones, inicia turnos, cancela, detiene y media approvals;
+- la fuente registra un lock acotado sobre manifests y entrypoints de Cline CLI 3.0.61 y paquetes internos 0.0.82;
+- la suite histórica reportada y persistida es 176/176; no fue reejecutada en `KCH_PSA`;
+- la instalación personal observada seguía en 0.8.0, `RUNNING`, y no se promovió;
+- no se ejecutó una inferencia Cline real ni una herramienta con efecto aprobada end-to-end.
+
+La rama contiene trabajo sobre:
 
 - integración con Cline y OpenCode;
 - sidecar Python y continuidad de sesiones;
 - Telegram y escritorio;
 - voz/ElevenLabs con gates de activación;
 - exportación, reconciliación y recuperación tras interrupciones;
-- una familia de paquetes Jarvis v0.5.x y reportes posteriores de v0.7.0.
+- una familia de paquetes Jarvis v0.5.x, v0.7.0, la instalación 0.8.0 y la candidata fuente 0.9.0.
 
-El reporte de v0.7.0 y sus conteos de tests se conservan como `HISTORICAL_SESSION_REPORT_NOT_YET_REEXECUTED`. No se importarán como release canónica hasta localizar artefactos, manifiestos, hashes, código y recibos host-reales.
+Jarvis 0.9.0 se admite como `REMOTE_SOURCE_VERIFIED / HISTORICAL_TEST_REPORT_NOT_REEXECUTED / NOT_DEPLOYED`. Su código no se copiará automáticamente al repositorio público KCH_PSA: Jarvis es privado y no hay una licencia de transferencia verificada. Primero se extraerá el contrato; cualquier importación física exige una decisión explícita de custodia/licencia.
 
 ## Fuentes nativas identificadas
 

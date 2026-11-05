@@ -111,7 +111,9 @@ Toda acción material requiere sujeto, alcance, lease, política, host, recibo y
 
 ## 7. Primer vertical verificable
 
-El primer vertical no será una pantalla. Será:
+Jarvis 0.9.0 ya contiene un precursor de este vertical sobre Cline CLI 3.0.61 / SDK interno 0.0.82. No corresponde reescribirlo ni llamarlo Cline 2 completo: carece de reattach, usa una versión anterior a la frontera SDK 0.2.0, no tiene checkpoint activo y no atravesó inferencia/efecto end-to-end.
+
+El primer vertical de KCH_PSA no será una pantalla. Será una migración adjudicada del contrato:
 
 ```text
 KCH mission
@@ -123,7 +125,7 @@ KCH mission
 → exportación exacta
 ```
 
-Se ejecutará primero sin prompts sustantivos, modelos, herramientas ni permisos externos; después se ampliará por gates. Sólo entonces se conectará a Playpad/Telegram.
+Se ejecutará primero sin prompts sustantivos, modelos, herramientas ni permisos externos; después se ampliará por gates. Deberá añadir reattach, health/stall, checkpoints, export/reconcile y una matriz de versiones separada para CLI, SDK, IDE/Desktop y backend. Sólo entonces se conectará a Playpad/Telegram.
 
 ## No-claims actuales
 
