@@ -14,7 +14,7 @@ from typing import Any
 from uuid import uuid4
 
 from .canonical import canonical_json
-from .ledger import HashChainLedger, LedgerEvent
+from .ledger import HashChainLedger, LedgerEvent, LedgerHeadConflict
 
 
 START_AUTHORIZED_EVENT = "resident.start.authorized.v0.1"
@@ -123,20 +123,29 @@ class DurableResidentLifecycle:
             raise LifecycleError("IDEMPOTENCY_CONFLICT")
 
     def _append_once(
-        self, event_type: str, payload: dict[str, Any], event_id: str
+        self,
+        event_type: str,
+        payload: dict[str, Any],
+        event_id: str,
+        expected_head: str,
     ) -> LedgerEvent:
         existing = self._existing(event_id)
         if existing is not None:
             self._assert_same(existing, event_type, payload)
             return existing
         try:
-            return self.ledger.append(event_type, payload, event_id=event_id)
-        except sqlite3.IntegrityError:
+            return self.ledger.append_if_head(
+                event_type,
+                payload,
+                expected_head=expected_head,
+                event_id=event_id,
+            )
+        except (sqlite3.IntegrityError, LedgerHeadConflict):
             existing = self._existing(event_id)
-            if existing is None:
-                raise
-            self._assert_same(existing, event_type, payload)
-            return existing
+            if existing is not None:
+                self._assert_same(existing, event_type, payload)
+                return existing
+            raise
 
     def snapshot(self) -> LifecycleSnapshot:
         phase = ResidentPhase.STOPPED
@@ -283,7 +292,9 @@ class DurableResidentLifecycle:
             current.last_transition_at, "LAST_TRANSITION_AT"
         ):
             raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
-        self._append_once(START_AUTHORIZED_EVENT, payload, operation_id)
+        self._append_once(
+            START_AUTHORIZED_EVENT, payload, operation_id, current.ledger_head
+        )
         return self.snapshot()
 
     def observe_running(
@@ -325,7 +336,9 @@ class DurableResidentLifecycle:
             current.authorization_expires_at, "AUTHORIZATION_EXPIRES_AT"
         ):
             raise LifecycleError("START_AUTHORIZATION_EXPIRED")
-        self._append_once(RUNNING_OBSERVED_EVENT, payload, operation_id)
+        self._append_once(
+            RUNNING_OBSERVED_EVENT, payload, operation_id, current.ledger_head
+        )
         return self.snapshot()
 
     def request_stop(
@@ -359,7 +372,9 @@ class DurableResidentLifecycle:
             raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
         if current.desired_state is DesiredState.STOPPED:
             raise LifecycleError("STOP_ALREADY_REQUESTED")
-        self._append_once(STOP_REQUESTED_EVENT, payload, operation_id)
+        self._append_once(
+            STOP_REQUESTED_EVENT, payload, operation_id, current.ledger_head
+        )
         return self.snapshot()
 
     def observe_stopped(
@@ -397,5 +412,7 @@ class DurableResidentLifecycle:
             observed_at, "OBSERVED_AT"
         ) < _time(current.last_transition_at, "LAST_TRANSITION_AT"):
             raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
-        self._append_once(STOPPED_OBSERVED_EVENT, payload, operation_id)
+        self._append_once(
+            STOPPED_OBSERVED_EVENT, payload, operation_id, current.ledger_head
+        )
         return self.snapshot()
