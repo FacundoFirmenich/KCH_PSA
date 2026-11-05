@@ -3,7 +3,7 @@ from __future__ import annotations
 from tempfile import TemporaryDirectory
 import unittest
 
-from kch_psa.ledger import HashChainLedger
+from kch_psa.ledger import HashChainLedger, LedgerHeadConflict
 from kch_psa.lifecycle import (
     DesiredState,
     DurableResidentLifecycle,
@@ -193,6 +193,25 @@ class ResidentLifecycleTests(unittest.TestCase):
                 operation_id="stopped-wrong-ref",
             )
         self.assertEqual(self.lifecycle.snapshot().event_count, 3)
+
+    def test_stale_ledger_head_cannot_append_a_competing_transition(self) -> None:
+        stale_head = self.ledger.head
+        self.ledger.append_if_head(
+            "test.first",
+            {"value": 1},
+            expected_head=stale_head,
+            event_id="first",
+        )
+        with self.assertRaises(LedgerHeadConflict):
+            self.ledger.append_if_head(
+                "test.competing",
+                {"value": 2},
+                expected_head=stale_head,
+                event_id="competing",
+            )
+        verification = self.ledger.verify()
+        self.assertTrue(verification.valid)
+        self.assertEqual(verification.event_count, 1)
 
     def test_residents_are_confederated_not_state_fused(self) -> None:
         second = DurableResidentLifecycle(self.ledger, "jarvis-telegram")
