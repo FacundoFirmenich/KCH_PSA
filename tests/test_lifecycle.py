@@ -125,6 +125,35 @@ class ResidentLifecycleTests(unittest.TestCase):
             )
         self.assertEqual(self.lifecycle.snapshot().event_count, 1)
 
+    def test_expired_lease_becomes_explicit_stop_work(self) -> None:
+        authorized = self.authorize(expires_at=T2)
+        self.assertEqual(authorized.pending_action_at(T1), "START")
+        self.assertEqual(
+            authorized.pending_action_at(T2), "EXPIRE_START_AUTHORIZATION"
+        )
+        with self.assertRaisesRegex(
+            LifecycleError, "START_AUTHORIZATION_NOT_EXPIRED"
+        ):
+            self.lifecycle.expire_start_authorization(
+                observed_at=T1,
+                operation_id="expire-too-soon",
+            )
+        self.assertEqual(self.lifecycle.snapshot().event_count, 1)
+
+        expired = self.lifecycle.expire_start_authorization(
+            observed_at=T2,
+            operation_id="expire-auth",
+        )
+        self.assertEqual(expired.desired_state, DesiredState.STOPPED)
+        self.assertEqual(expired.pending_action, "STOP")
+        closed = self.lifecycle.observe_stopped(
+            stop_request_event_id="expire-auth",
+            observation_ref="host:no-process-created",
+            observed_at=T3,
+            operation_id="expired-closed",
+        )
+        self.assertEqual(closed.phase, ResidentPhase.STOPPED)
+
     def test_stop_can_revoke_authorization_before_process_exists(self) -> None:
         self.authorize()
         requested = self.lifecycle.request_stop(
