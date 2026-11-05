@@ -8,7 +8,7 @@
 - R33 permanece como antecedente nativo operativo que debe auditarse, no copiarse a ciegas.
 - R34 está deprecada como release operativa y se conserva únicamente como objeto forense hasta localizar sus fallos de fluidez, interposición y arquitectura.
 - El proyecto Jarvis y las ramas KCH posteriores deben reconciliarse desde sus fuentes actuales en Biblioteca/tareas, GitHub, Drive y artefactos locales.
-- El kernel neutral de engines y el ciclo de vida durable están implementados y pasan CI en Python 3.11–3.13.
+- El kernel neutral de engines y el ciclo de vida durable están implementados, pasan CI en Python 3.11–3.13 y 22/22 tests locales en Windows/Python 3.14.
 - La genealogía remota KCH/Jarvis de agosto-septiembre está reconciliada por carriles; una versión mayor no transfiere autoridad por sí sola.
 - No hay promoción, activación universal, entrenamiento PHL ni migración automática de claims históricos.
 - La activación host-real del nuevo kernel permanece pendiente; C: está saturado y no se borró evidencia para forzar una validación local.

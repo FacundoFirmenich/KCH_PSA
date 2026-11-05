@@ -45,6 +45,18 @@ Workflow: [ci run 42120411529](https://github.com/FacundoFirmenich/KCH_PSA/actio
 | Python 3.12 | PASS | PASS | PASS |
 | Python 3.13 | PASS | PASS | PASS |
 
+### Gate Windows local adicional
+
+Sobre el checkout exacto `d524e343d254df265725edabac26a491928a9ab5`, el Python
+predeterminado del host era 3.14. La primera invocación no ejecutó tests porque el
+layout `src/` no estaba instalado ni expuesto en `sys.path`; produjo cuatro errores
+de importación `ModuleNotFoundError` y queda preservada como evidencia adversa de
+invocación. Sin instalar dependencias y fijando únicamente `PYTHONPATH=src`, la suite
+ejecutó **22/22 tests en 1,721 s: PASS**.
+
+Este resultado valida los bytes fuente en Windows/Python 3.14. No equivale a una
+instalación aislada 3.14 ni a activación de procesos reales.
+
 El gate anterior de concurrencia también pasó: [ci run 42119994308](https://github.com/FacundoFirmenich/KCH_PSA/actions/runs/42119994308). El primer gate secuencial fue [ci run 42119514573](https://github.com/FacundoFirmenich/KCH_PSA/actions/runs/42119514573).
 
 ## Revisión adversa preservada
@@ -52,6 +64,10 @@ El gate anterior de concurrencia también pasó: [ci run 42119994308](https://gi
 La primera implementación secuencial pasó CI, pero una revisión posterior encontró que dos controladores podían derivar transiciones desde el mismo head. Se añadió una precondición atómica de head en la misma transacción `BEGIN IMMEDIATE`; la prueba de escritor obsoleto confirma que sólo la primera transición se conserva.
 
 La segunda implementación impedía ejecutar después del vencimiento, pero no cerraba durablemente la autorización expirada. Se añadió `EXPIRE_START_AUTHORIZATION` y la transición supervisada a parada pendiente.
+
+La primera invocación Windows no encontró el paquete desde el checkout `src/`. No se
+oculta ni se contabiliza como fallo funcional: no llegó a cargar ningún test. La
+repetición corrigió exclusivamente la ruta de importación, no el código probado.
 
 Estos defectos no se borran de la genealogía: los commits previos permanecen como candidatos superados.
 
