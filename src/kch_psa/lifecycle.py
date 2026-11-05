@@ -58,6 +58,7 @@ class LifecycleSnapshot:
     stop_request_event_id: str | None
     process_ref: str | None
     event_count: int
+    last_transition_at: str | None
     ledger_head: str
 
     @property
@@ -242,6 +243,7 @@ class DurableResidentLifecycle:
             stop_request_event_id=stop_request_event_id,
             process_ref=process_ref,
             event_count=len(events),
+            last_transition_at=last_transition_at,
             ledger_head=self.ledger.head,
         )
 
@@ -277,6 +279,10 @@ class DurableResidentLifecycle:
         current = self.snapshot()
         if current.phase is not ResidentPhase.STOPPED:
             raise LifecycleError("RESIDENT_NOT_STOPPED")
+        if current.last_transition_at is not None and requested < _time(
+            current.last_transition_at, "LAST_TRANSITION_AT"
+        ):
+            raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
         self._append_once(START_AUTHORIZED_EVENT, payload, operation_id)
         return self.snapshot()
 
@@ -311,6 +317,10 @@ class DurableResidentLifecycle:
             raise LifecycleError("START_REVOKED")
         if authorization_event_id != current.authorization_event_id:
             raise LifecycleError("AUTHORIZATION_REFERENCE_MISMATCH")
+        if current.authorization_requested_at is None or observed < _time(
+            current.authorization_requested_at, "AUTHORIZATION_REQUESTED_AT"
+        ):
+            raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
         if current.authorization_expires_at is None or observed >= _time(
             current.authorization_expires_at, "AUTHORIZATION_EXPIRES_AT"
         ):
@@ -343,6 +353,10 @@ class DurableResidentLifecycle:
         current = self.snapshot()
         if current.phase is ResidentPhase.STOPPED:
             return current
+        if current.last_transition_at is not None and _time(
+            requested_at, "REQUESTED_AT"
+        ) < _time(current.last_transition_at, "LAST_TRANSITION_AT"):
+            raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
         if current.desired_state is DesiredState.STOPPED:
             raise LifecycleError("STOP_ALREADY_REQUESTED")
         self._append_once(STOP_REQUESTED_EVENT, payload, operation_id)
@@ -379,5 +393,9 @@ class DurableResidentLifecycle:
             raise LifecycleError("STOP_NOT_REQUESTED")
         if stop_request_event_id != current.stop_request_event_id:
             raise LifecycleError("STOP_REQUEST_REFERENCE_MISMATCH")
+        if current.last_transition_at is not None and _time(
+            observed_at, "OBSERVED_AT"
+        ) < _time(current.last_transition_at, "LAST_TRANSITION_AT"):
+            raise LifecycleError("LIFECYCLE_TIME_REGRESSION")
         self._append_once(STOPPED_OBSERVED_EVENT, payload, operation_id)
         return self.snapshot()
