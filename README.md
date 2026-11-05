@@ -21,3 +21,12 @@
 ## Frontera de evidencia
 
 Este README fija el punto de partida, no demuestra todavía integración, superioridad, despliegue ni causalidad. Los resultados adversos y las releases deprecadas se preservarán como evidencia, no como autoridad operativa.
+
+## Documentación vigente
+
+- [Auditoría forense R34](docs/R34_FORENSIC_AUDIT_v0.1.md)
+- [Reconciliación del estado KCH/Jarvis](docs/CURRENT_STATE_RECONCILIATION_v0.1.md)
+- [Ecosistema de arneses y agentes 2026](docs/ECOSYSTEM_2026-11-05.md)
+- [Arquitectura KCH_PSA](docs/ARCHITECTURE_v0.1.md)
+- [Registro de fuentes](docs/SOURCE_REGISTRY_v0.1.json)
+- [Checkpoint material](docs/CHECKPOINT_MATERIAL_2026-11-05.md)

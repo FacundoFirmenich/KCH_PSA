@@ -1,0 +1,45 @@
+{
+  "schema": "kch-psa.source-registry.v0.1.0",
+  "cutoff": "2026-11-05",
+  "sources": [
+    {
+      "id": "github-kch-main-tree",
+      "uri": "https://api.github.com/repos/FacundoFirmenich/KCH/git/trees/main?recursive=1",
+      "state": "EXACT_PROVIDER_RESPONSE",
+      "tree_sha": "76c52fea0180cc61bfee4318d1734d67f3873ec2",
+      "path_count": 2529,
+      "truncated": false
+    },
+    {
+      "id": "github-kch-psa",
+      "uri": "https://github.com/FacundoFirmenich/KCH_PSA",
+      "state": "CREATED_AND_PUSHED"
+    },
+    {
+      "id": "codex-jarvis-telegram-desktop",
+      "uri": "codex://threads/01a077b6-f814-7b92-ae6d-18fc6e0bed7a",
+      "state": "PARTIAL_NATIVE_READ_NOT_EOF"
+    },
+    {
+      "id": "codex-jarvis-native-gpt-bridge",
+      "uri": "codex://threads/01a0498e-906e-7e52-a1bc-3fcc6b13e353",
+      "state": "IDENTIFIED_NOT_YET_EOF"
+    },
+    {
+      "id": "codex-jarvis-v053-1",
+      "uri": "codex://threads/01a03f11-dcfe-7350-8e5a-abcbdf9c4617",
+      "state": "IDENTIFIED_NOT_YET_EOF"
+    },
+    {
+      "id": "codex-jarvis-v053-2",
+      "uri": "codex://threads/01a05a61-ddf2-7b21-b803-6e59d07e6f81",
+      "state": "IDENTIFIED_NOT_YET_EOF"
+    },
+    {
+      "id": "local-r34-installed-candidate",
+      "uri": "C:/Users/User/.codex/plugins/cache/personal/kch-native-r34/0.11.34+codex.20260824163744",
+      "state": "READ_ONLY_FORENSIC_INSPECTION"
+    }
+  ],
+  "evidence_boundary": "Registry states are per source. Identification or partial reading does not imply EOF, semantic assimilation, authority, execution, or training."
+}
