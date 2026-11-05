@@ -69,6 +69,19 @@ class LifecycleSnapshot:
             return "STOP"
         return "NONE"
 
+    def pending_action_at(self, observed_at: str) -> str:
+        observed = _time(observed_at, "OBSERVED_AT")
+        if (
+            self.phase is ResidentPhase.START_AUTHORIZED
+            and self.desired_state is DesiredState.RUNNING
+            and self.authorization_expires_at is not None
+            and observed >= _time(
+                self.authorization_expires_at, "AUTHORIZATION_EXPIRES_AT"
+            )
+        ):
+            return "EXPIRE_START_AUTHORIZATION"
+        return self.pending_action
+
 
 def _time(value: str, field: str) -> datetime:
     if not isinstance(value, str):
@@ -296,6 +309,29 @@ class DurableResidentLifecycle:
             START_AUTHORIZED_EVENT, payload, operation_id, current.ledger_head
         )
         return self.snapshot()
+
+    def expire_start_authorization(
+        self,
+        *,
+        observed_at: str,
+        operation_id: str | None = None,
+    ) -> LifecycleSnapshot:
+        observed = _time(observed_at, "OBSERVED_AT")
+        current = self.snapshot()
+        if current.phase is not ResidentPhase.START_AUTHORIZED:
+            raise LifecycleError("NO_START_AUTHORIZATION_TO_EXPIRE")
+        if current.desired_state is not DesiredState.RUNNING:
+            raise LifecycleError("START_ALREADY_REVOKED")
+        if current.authorization_expires_at is None or observed < _time(
+            current.authorization_expires_at, "AUTHORIZATION_EXPIRES_AT"
+        ):
+            raise LifecycleError("START_AUTHORIZATION_NOT_EXPIRED")
+        return self.request_stop(
+            actor="kch-psa:lease-supervisor",
+            reason="Start authorization lease expired before running",
+            requested_at=observed_at,
+            operation_id=operation_id,
+        )
 
     def observe_running(
         self,
