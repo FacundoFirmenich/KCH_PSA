@@ -53,6 +53,7 @@ class LifecycleSnapshot:
     phase: ResidentPhase
     desired_state: DesiredState
     authorization_event_id: str | None
+    authorization_requested_at: str | None
     authorization_expires_at: str | None
     stop_request_event_id: str | None
     process_ref: str | None
@@ -140,9 +141,11 @@ class DurableResidentLifecycle:
         phase = ResidentPhase.STOPPED
         desired = DesiredState.STOPPED
         authorization_event_id: str | None = None
+        authorization_requested_at: str | None = None
         authorization_expires_at: str | None = None
         stop_request_event_id: str | None = None
         process_ref: str | None = None
+        last_transition_at: str | None = None
         events = self._resident_events()
 
         for event in events:
@@ -159,14 +162,20 @@ class DurableResidentLifecycle:
                 expires = _time(payload.get("expires_at"), "EXPIRES_AT")
                 if expires <= requested:
                     raise LifecycleError(f"START_AUTHORIZATION_LEASE_INVALID:{event.sequence}")
+                if last_transition_at is not None and requested < _time(
+                    last_transition_at, "LAST_TRANSITION_AT"
+                ):
+                    raise LifecycleError(f"LIFECYCLE_TIME_REGRESSION:{event.sequence}")
                 _text(payload.get("actor"), "ACTOR", limit=200)
                 _text(payload.get("authority_ref"), "AUTHORITY_REF", limit=1000)
                 _text(payload.get("reason"), "REASON", limit=2000)
                 phase = ResidentPhase.START_AUTHORIZED
                 desired = DesiredState.RUNNING
                 authorization_event_id = event.event_id
+                authorization_requested_at = payload["requested_at"]
                 authorization_expires_at = payload["expires_at"]
                 stop_request_event_id = None
+                last_transition_at = payload["requested_at"]
                 process_ref = None
 
             elif event.event_type == RUNNING_OBSERVED_EVENT:
@@ -175,21 +184,31 @@ class DurableResidentLifecycle:
                 if payload.get("authorization_event_id") != authorization_event_id:
                     raise LifecycleError(f"AUTHORIZATION_REFERENCE_MISMATCH:{event.sequence}")
                 observed = _time(payload.get("observed_at"), "OBSERVED_AT")
+                if authorization_requested_at is None or observed < _time(
+                    authorization_requested_at, "AUTHORIZATION_REQUESTED_AT"
+                ):
+                    raise LifecycleError(f"LIFECYCLE_TIME_REGRESSION:{event.sequence}")
                 if authorization_expires_at is None or observed >= _time(
                     authorization_expires_at, "AUTHORIZATION_EXPIRES_AT"
                 ):
                     raise LifecycleError(f"START_AUTHORIZATION_EXPIRED:{event.sequence}")
                 process_ref = _text(payload.get("process_ref"), "PROCESS_REF", limit=1000)
                 phase = ResidentPhase.RUNNING
+                last_transition_at = payload["observed_at"]
 
             elif event.event_type == STOP_REQUESTED_EVENT:
                 if phase is ResidentPhase.STOPPED or desired is not DesiredState.RUNNING:
                     raise LifecycleError(f"INVALID_STOP_REQUEST_TRANSITION:{event.sequence}")
-                _time(payload.get("requested_at"), "REQUESTED_AT")
+                requested = _time(payload.get("requested_at"), "REQUESTED_AT")
+                if last_transition_at is not None and requested < _time(
+                    last_transition_at, "LAST_TRANSITION_AT"
+                ):
+                    raise LifecycleError(f"LIFECYCLE_TIME_REGRESSION:{event.sequence}")
                 _text(payload.get("actor"), "ACTOR", limit=200)
                 _text(payload.get("reason"), "REASON", limit=2000)
                 desired = DesiredState.STOPPED
                 stop_request_event_id = event.event_id
+                last_transition_at = payload["requested_at"]
 
             elif event.event_type == STOPPED_OBSERVED_EVENT:
                 if (
@@ -198,20 +217,27 @@ class DurableResidentLifecycle:
                     or payload.get("stop_request_event_id") != stop_request_event_id
                 ):
                     raise LifecycleError(f"INVALID_STOPPED_TRANSITION:{event.sequence}")
-                _time(payload.get("observed_at"), "OBSERVED_AT")
+                observed = _time(payload.get("observed_at"), "OBSERVED_AT")
+                if last_transition_at is not None and observed < _time(
+                    last_transition_at, "LAST_TRANSITION_AT"
+                ):
+                    raise LifecycleError(f"LIFECYCLE_TIME_REGRESSION:{event.sequence}")
                 _text(payload.get("observation_ref"), "OBSERVATION_REF", limit=1000)
                 phase = ResidentPhase.STOPPED
                 desired = DesiredState.STOPPED
                 authorization_event_id = None
+                authorization_requested_at = None
                 authorization_expires_at = None
                 stop_request_event_id = None
                 process_ref = None
+                last_transition_at = payload["observed_at"]
 
         return LifecycleSnapshot(
             resident_id=self.resident_id,
             phase=phase,
             desired_state=desired,
             authorization_event_id=authorization_event_id,
+            authorization_requested_at=authorization_requested_at,
             authorization_expires_at=authorization_expires_at,
             stop_request_event_id=stop_request_event_id,
             process_ref=process_ref,
@@ -300,9 +326,6 @@ class DurableResidentLifecycle:
         requested_at: str,
         operation_id: str | None = None,
     ) -> LifecycleSnapshot:
-        current = self.snapshot()
-        if current.phase is ResidentPhase.STOPPED:
-            return current
         operation_id = operation_id or str(uuid4())
         payload = {
             "schema": LIFECYCLE_SCHEMA,
@@ -317,6 +340,9 @@ class DurableResidentLifecycle:
         if existing is not None:
             self._assert_same(existing, STOP_REQUESTED_EVENT, payload)
             return self.snapshot()
+        current = self.snapshot()
+        if current.phase is ResidentPhase.STOPPED:
+            return current
         if current.desired_state is DesiredState.STOPPED:
             raise LifecycleError("STOP_ALREADY_REQUESTED")
         self._append_once(STOP_REQUESTED_EVENT, payload, operation_id)
