@@ -18,6 +18,10 @@ GENESIS_HASH = "0" * 64
 LEDGER_SCHEMA = "kch-psa.hash-chain-ledger.v0.1.0"
 
 
+class LedgerHeadConflict(RuntimeError):
+    """The ledger advanced after a caller derived its transition."""
+
+
 @dataclass(frozen=True, slots=True)
 class LedgerEvent:
     sequence: int
@@ -112,9 +116,15 @@ class HashChainLedger:
         *,
         event_id: str | None = None,
         occurred_at: str | None = None,
+        expected_head: str | None = None,
     ) -> LedgerEvent:
         if not event_type or len(event_type) > 160:
             raise ValueError("EVENT_TYPE_INVALID")
+        if expected_head is not None and (
+            len(expected_head) != 64
+            or any(character not in "0123456789abcdef" for character in expected_head)
+        ):
+            raise ValueError("EXPECTED_HEAD_INVALID")
         payload_json = canonical_json(payload)
         payload_sha256 = sha256(payload_json.encode("utf-8")).hexdigest()
         event_id = event_id or str(uuid4())
@@ -129,6 +139,10 @@ class HashChainLedger:
                     "SELECT sequence,event_hash FROM events ORDER BY sequence DESC LIMIT 1"
                 ).fetchone()
                 previous_hash = row["event_hash"] if row else GENESIS_HASH
+                if expected_head is not None and previous_hash != expected_head:
+                    raise LedgerHeadConflict(
+                        f"LEDGER_HEAD_CONFLICT:expected={expected_head}:actual={previous_hash}"
+                    )
                 sequence = (row["sequence"] + 1) if row else 1
                 event_hash = self._event_hash(
                     sequence,
@@ -173,9 +187,29 @@ class HashChainLedger:
             event_hash,
         )
 
+    def append_if_head(
+        self,
+        event_type: str,
+        payload: Any,
+        *,
+        expected_head: str,
+        event_id: str | None = None,
+        occurred_at: str | None = None,
+    ) -> LedgerEvent:
+        return self.append(
+            event_type,
+            payload,
+            event_id=event_id,
+            occurred_at=occurred_at,
+            expected_head=expected_head,
+        )
+
     def events(self) -> Iterator[LedgerEvent]:
-        cursor = self._connection.execute("SELECT * FROM events ORDER BY sequence")
-        for row in cursor:
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT * FROM events ORDER BY sequence"
+            ).fetchall()
+        for row in rows:
             yield LedgerEvent(
                 row["sequence"],
                 row["event_id"],
@@ -190,8 +224,11 @@ class HashChainLedger:
     def verify(self) -> LedgerVerification:
         previous_hash = GENESIS_HASH
         count = 0
-        cursor = self._connection.execute("SELECT * FROM events ORDER BY sequence")
-        for row in cursor:
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT * FROM events ORDER BY sequence"
+            ).fetchall()
+        for row in rows:
             count += 1
             sequence = row["sequence"]
             if sequence != count:
@@ -220,13 +257,15 @@ class HashChainLedger:
 
     @property
     def head(self) -> str:
-        row = self._connection.execute(
-            "SELECT event_hash FROM events ORDER BY sequence DESC LIMIT 1"
-        ).fetchone()
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT event_hash FROM events ORDER BY sequence DESC LIMIT 1"
+            ).fetchone()
         return row["event_hash"] if row else GENESIS_HASH
 
     def close(self) -> None:
-        self._connection.close()
+        with self._lock:
+            self._connection.close()
 
     def __enter__(self) -> "HashChainLedger":
         return self
