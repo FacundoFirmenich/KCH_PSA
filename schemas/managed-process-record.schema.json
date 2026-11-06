@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FacundoFirmenich/KCH_PSA/schemas/managed-process-record.schema.json",
+  "title": "KCH PSA managed process record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "resident_id",
+    "start_operation_id",
+    "authorization_event_id",
+    "identity",
+    "argv_sha256",
+    "started_at",
+    "run_expires_at",
+    "stdout_path",
+    "stderr_path",
+    "state_path",
+    "state",
+    "stop_request_event_id",
+    "stopped_at",
+    "exit_code"
+  ],
+  "properties": {
+    "schema": {"const": "kch-psa.managed-process-record.v0.1.0"},
+    "resident_id": {"type": "string", "minLength": 1},
+    "start_operation_id": {"type": "string", "minLength": 1},
+    "authorization_event_id": {"type": "string", "minLength": 1},
+    "identity": {"$ref": "#/$defs/processIdentity"},
+    "argv_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "run_expires_at": {"type": "string", "format": "date-time"},
+    "stdout_path": {"type": "string", "minLength": 1},
+    "stderr_path": {"type": "string", "minLength": 1},
+    "state_path": {"type": "string", "minLength": 1},
+    "state": {"enum": ["RUNNING", "STOPPED"]},
+    "stop_request_event_id": {"type": ["string", "null"]},
+    "stopped_at": {"type": ["string", "null"], "format": "date-time"},
+    "exit_code": {"type": ["integer", "null"]}
+  },
+  "$defs": {
+    "processIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "pid", "executable_path", "executable_sha256", "start_token"],
+      "properties": {
+        "schema": {"const": "kch-psa.process-identity.v0.1.0"},
+        "pid": {"type": "integer", "minimum": 1},
+        "executable_path": {"type": "string", "minLength": 1},
+        "executable_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "start_token": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
